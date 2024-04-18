@@ -1,5 +1,6 @@
 [workspace]
 
 members = [
-    "dht-sensor", "embassy-dht"
+    "dht-sensor", 
+    "embassy-dht"
 ]

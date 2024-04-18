@@ -1,0 +1,21 @@
+{
+    "rust-analyzer.cargo.features": [
+       
+    ],
+    "files.associations": {
+        "usart.h": "c",
+        "adc.h": "c",
+        "miniprintf.h": "c",
+        "lcd.h": "c",
+        "i2c.h": "c",
+        "stdbool.h": "c",
+        "task.h": "c",
+        "gpio.h": "c",
+        "stdint.h": "c",
+        "system.h": "c",
+        "ssd1306_conf.h": "c",
+        "rcc.h": "c",
+        "sfe_microoled.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
+}
