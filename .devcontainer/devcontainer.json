@@ -1,0 +1,21 @@
+{
+    "name": "Rust",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "../"
+    },
+    "customizations": {
+        "vscode": {
+            "settings": { 
+                "terminal.integrated.shell.linux": "/bin/bash"
+            },
+            "extensions": [
+                "rust-lang.rust-analyzer"
+            ]
+        }
+    },
+    "postStartCommand": "/bin/bash devcontainer.start.sh",
+    "remoteEnv": {
+        "CARGO_TARGET_DIR": "/tmp"
+    }
+}
