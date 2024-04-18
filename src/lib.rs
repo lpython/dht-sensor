@@ -80,8 +80,10 @@
 mod read;
 pub use read::{Delay, DhtError, InputOutputPin};
 
+use embedded_hal::digital::StatefulOutputPin;
+
 #[cfg(feature = "async")]
-use embedded_hal_async::delay::DelayUs;
+use embedded_hal_async::delay::DelayNs;
 
 pub mod dht11 {
     use super::*;
@@ -104,12 +106,15 @@ pub mod dht11 {
 
     #[cfg(feature = "async")]
     pub async fn read<E>(
-        delay: &mut (impl Delay + DelayUs),
-        pin: &mut impl InputOutputPin<E>,
-    ) -> Result<Reading, read::DhtError<E>> {
+        delay: &mut impl Delay,
+        pin: &mut impl InputOutputPin,
+    ) -> Result<Reading, read::DhtError<()>> {
+
+
         pin.set_low()?;
-        DelayUs::delay_ms(delay, 18).await;
-        read::read_raw(delay, pin).map(raw_to_reading)
+        DelayNs::delay_ms(delay, 18).await;
+        let raw = read::read_raw(delay, pin).await;
+        raw.map(raw_to_reading)
     }
 
     fn raw_to_reading(bytes: [u8; 4]) -> Reading {
@@ -165,12 +170,13 @@ pub mod dht22 {
 
     #[cfg(feature = "async")]
     pub async fn read<E>(
-        delay: &mut (impl Delay + DelayUs),
-        pin: &mut impl InputOutputPin<E>,
-    ) -> Result<Reading, read::DhtError<E>> {
-        pin.set_low()?;
-        DelayUs::delay_ms(delay, 1).await;
-        read::read_raw(delay, pin).map(raw_to_reading)
+        delay: &mut impl Delay,
+        pin: &mut impl StatefulOutputPin,
+    ) -> Result<Reading, read::DhtError<()>> {
+        pin.set_low().unwrap();
+        DelayNs::delay_ms(delay, 1).await;
+        let raw = read::read_raw(delay, pin).await;
+        raw.map(raw_to_reading)
     }
 
     fn raw_to_reading(bytes: [u8; 4]) -> Reading {
