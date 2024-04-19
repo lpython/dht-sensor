@@ -80,6 +80,7 @@
 mod read;
 pub use read::{Delay, DhtError, InputOutputPin};
 
+use embedded_hal::digital::Error;
 use embedded_hal::digital::StatefulOutputPin;
 
 #[cfg(feature = "async")]
@@ -95,7 +96,7 @@ pub mod dht11 {
     }
 
     #[cfg(not(feature = "async"))]
-    pub fn read<E>(
+    pub fn read<E: Error>(
         delay: &mut impl Delay,
         pin: &mut impl InputOutputPin<E>,
     ) -> Result<Reading, read::DhtError<E>> {
@@ -105,10 +106,10 @@ pub mod dht11 {
     }
 
     #[cfg(feature = "async")]
-    pub async fn read<E>(
+    pub async fn read<E: Error>(
         delay: &mut impl Delay,
         pin: &mut impl InputOutputPin,
-    ) -> Result<Reading, read::DhtError<()>> {
+    ) -> Result<Reading, read::DhtError<E>> {
 
 
         pin.set_low()?;
@@ -159,7 +160,7 @@ pub mod dht22 {
     }
 
     #[cfg(not(feature = "async"))]
-    pub fn read<E>(
+    pub fn read<E: Error>(
         delay: &mut impl Delay,
         pin: &mut impl InputOutputPin<E>,
     ) -> Result<Reading, read::DhtError<E>> {
@@ -169,10 +170,10 @@ pub mod dht22 {
     }
 
     #[cfg(feature = "async")]
-    pub async fn read<E>(
+    pub async fn read<E: Error>(
         delay: &mut impl Delay,
         pin: &mut impl StatefulOutputPin,
-    ) -> Result<Reading, read::DhtError<()>> {
+    ) -> Result<Reading, read::DhtError<E>> {
         pin.set_low().unwrap();
         DelayNs::delay_ms(delay, 1).await;
         let raw = read::read_raw(delay, pin).await;
