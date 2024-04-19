@@ -81,6 +81,7 @@ mod read;
 pub use read::{Delay, DhtError, InputOutputPin};
 
 use embedded_hal::digital::Error;
+use embedded_hal::digital::ErrorType;
 use embedded_hal::digital::StatefulOutputPin;
 
 #[cfg(feature = "async")]
@@ -96,22 +97,26 @@ pub mod dht11 {
     }
 
     #[cfg(not(feature = "async"))]
-    pub fn read<E: Error>(
+    pub fn read<I, E>(
         delay: &mut impl Delay,
-        pin: &mut impl InputOutputPin<E>,
-    ) -> Result<Reading, read::DhtError<E>> {
+        pin: &mut I,
+    ) -> Result<Reading, read::DhtError<E>>
+    where I: InputOutputPin<Error = E>,
+          E: Error,
+    {
         pin.set_low()?;
         delay.delay_ms(18);
         read::read_raw(delay, pin).map(raw_to_reading)
     }
 
     #[cfg(feature = "async")]
-    pub async fn read<E: Error>(
+    pub async fn read<I, E>(
         delay: &mut impl Delay,
-        pin: &mut impl InputOutputPin,
-    ) -> Result<Reading, read::DhtError<E>> {
-
-
+        pin: &mut I,
+    ) -> Result<Reading, read::DhtError<E>> 
+    where I: InputOutputPin<Error = E>,
+          E: Error
+    {
         pin.set_low()?;
         DelayNs::delay_ms(delay, 18).await;
         let raw = read::read_raw(delay, pin).await;
@@ -160,20 +165,26 @@ pub mod dht22 {
     }
 
     #[cfg(not(feature = "async"))]
-    pub fn read<E: Error>(
+    pub fn read<I, E>(
         delay: &mut impl Delay,
-        pin: &mut impl InputOutputPin<E>,
-    ) -> Result<Reading, read::DhtError<E>> {
+        pin: &mut I,
+    ) -> Result<Reading, read::DhtError<E>>
+    where I: InputOutputPin<Error = E>,
+          E: Error
+    {
         pin.set_low()?;
         delay.delay_ms(1);
         read::read_raw(delay, pin).map(raw_to_reading)
     }
 
     #[cfg(feature = "async")]
-    pub async fn read<E: Error>(
+    pub async fn read<I, E>(
         delay: &mut impl Delay,
-        pin: &mut impl StatefulOutputPin,
-    ) -> Result<Reading, read::DhtError<E>> {
+        pin: &mut I,
+    ) -> Result<Reading, read::DhtError<E>> 
+    where I: InputOutputPin<Error = E>,
+          E: Error
+    {
         pin.set_low().unwrap();
         DelayNs::delay_ms(delay, 1).await;
         let raw = read::read_raw(delay, pin).await;

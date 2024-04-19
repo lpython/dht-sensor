@@ -12,63 +12,17 @@ pub enum DhtError<E: Error> {
     Timeout,
 }
 
-
-impl<E, P, F> From<P> for DhtError<F>
-where
-    E: Error,
-    P: ErrorType<Error = E>,
-    F: Error
+impl<T, E> From<T> for DhtError<E>
+where T: Error,
+      E: Error
 {
-    fn from(error:  P) -> Self {
-        // DhtError::PinError(error)
-        DhtError::Timeout
+    fn from(e: T) -> Self {
+        Self::Timeout
     }
 }
 
-// impl<E> Error for DhtError<E> {
+// impl<E: Error> Error for DhtError<E> {
 //     fn kind(&self) -> ErrorKind { ErrorKind::Other }
-// }
-
-// impl<E> ErrorType for DhtError<E > {
-//     type Error = core::convert::Infallible;
-// }
-
-// impl<E: Error> From<Infallible> for DhtError<E> {
-//     fn from(_: Infallible) -> DhtError<E> {
-//         unreachable!()
-//     }
-// }
-
-// impl<E, I, F> From<I::Error> for DhtError<E>
-// where E: Error,
-//       I: InputPin<Error = F> 
-// {
-//     fn from(error: I::Error) -> DhtError<E> {
-//         DhtError::PinError(error.into())
-//     }
-// }
-
-// impl<E: Error > From<E> for DhtError<E> 
-// {
-//     fn from(error: E) -> DhtError<E> {
-//         DhtError::PinError(error)
-//     }
-// }
-
-// impl<E, F> From<F> for DhtError<E> 
-// where F: embedded_hal::digital::ErrorType,
-//       F::Error: Error
-     
-// {
-//     fn from(error_type: F) -> DhtError<E> {
-//         DhtError::PinError(())
-//     }
-// }
-
-// impl<E> From<DhtError<E>> for DhtError<E> where E: embedded_hal::digital::ErrorType {
-//     fn from(error: DhtError<E>) -> Self {
-//         // Your conversion logic here
-//     }
 // }
 
 
@@ -103,7 +57,7 @@ async fn read_byte<E: Error>(delay: &mut impl Delay, pin: &mut impl InputPin<Err
 
 pub async fn read_raw<E: Error>(
     delay: &mut impl Delay,
-    pin: &mut impl InputOutputPin,
+    pin: &mut impl InputOutputPin<Error = E>,
 ) -> Result<[u8; 4], DhtError<E>> {
     pin.set_high().ok();
     delay.delay_us(48).await;
@@ -124,10 +78,11 @@ pub async fn read_raw<E: Error>(
 }
 
 /// Wait until the given function returns true or the timeout is reached.
-async fn wait_until_timeout<E, F>(delay: &mut impl Delay, mut func: F) -> Result<(), DhtError<E>>
+async fn wait_until_timeout<E, F, FE>(delay: &mut impl Delay, mut func: F) -> Result<(), DhtError<E>>
 where
-    F: FnMut() -> Result<bool, Infallible>,
-    E: Error
+    F: FnMut() -> Result<bool, FE>,
+    E: Error,
+    FE: Error
 {
     for _ in 0..TIMEOUT_US {
         if func()? {
